@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import supabase from "./helper/supabaseClient";
 
 function App() {
@@ -82,62 +83,138 @@ function App() {
     closeModal();
   }
 
-  const incomplete = todos.filter((t) => !t.is_completed);
-  const complete = todos.filter((t) => t.is_completed);
-
   return (
-    <div>
-      <h1>Todo List</h1>
-      <div>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Add a new Todo"
-        />
-        <button onClick={addTodo}>Add</button>
-      </div>
+    <div className="bg-[url('/src/assets/background-image.jpg')] h-screen bg-cover bg-center flex justify-center items-center">
+      <div className="flex flex-col items-center liquid-container liquid-animated min-h-[90%] w-[70%] scroll-auto">
+        {/* Heading */}
+        <h1 className="font-script text-4xl m-12">Todo List</h1>
 
-      <h2>Incomplete Todos</h2>
-      <div>
-        {incomplete.map((todo) => (
-          <div key={todo.id}>
-            <span style={{ flex: 1 }}>{todo.title}</span>
-            <button onClick={() => completeTodo(todo.id)}>Complete</button>
-            <button onClick={() => openEditModal(todo)}>Update</button>
-            <button onClick={() => deleteTodo(todo.id)}>Delete</button>
-          </div>
-        ))}
-      </div>
-
-      <h2>Completed Todos</h2>
-      <div>
-        {complete.map((todo) => (
-          <div key={todo.id}>
-            <span style={{ flex: 1, textDecoration: "line-through" }}>
-              {todo.title}
-            </span>
-            <button onClick={() => deleteTodo(todo.id)}>Delete</button>
-          </div>
-        ))}
-      </div>
-
-      {/* Simple modal popup for editing a title */}
-      {showModal && (
-        <div>
-          <div>
-            <h3>Edit Todo</h3>
-            <input
-              value={editTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
-              placeholder="New title"
-            />
-            <div>
-              <button onClick={closeModal}>Cancel</button>
-              <button onClick={saveEdit}>Save</button>
-            </div>
-          </div>
+        {/* Add TODO's */}
+        <div className="w-[80%] flex mb-4 gap-4">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Add a new Todo"
+            className="bg-white/40 shadow-md rounded-xl px-4 py-2 focus:outline-none flex-1"
+          />
+          <button onClick={addTodo} className="btn bg-turquoise">
+            Add
+          </button>
         </div>
-      )}
+
+        {/* Container */}
+        <div className="shadow-md mt-4 pt-4 w-[80%] min-h-[200px] overflow-y-auto rounded-xl">
+          {todos.length === 0 && (
+            <div className="mx-4 mb-4 opacity-70">
+              No todos yet. Add your first one above.
+            </div>
+          )}
+          {todos.map((todo) => (
+            <div
+              key={todo.id}
+              className={
+                "flex justify-between mx-2 py-2 transition " +
+                (todo.is_completed ? "opacity-80" : "")
+              }
+            >
+              <span
+                className={
+                  todo.is_completed ? "line-through opacity-60" : undefined
+                }
+              >
+                {todo.title}
+              </span>
+              <div className="flex gap-2">
+                <button
+                  className={
+                    "btn " +
+                    (todo.is_completed
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-turquoise")
+                  }
+                  onClick={() => completeTodo(todo.id)}
+                  disabled={todo.is_completed}
+                >
+                  Complete
+                </button>
+                <button
+                  className="btn bg-dutchWhite"
+                  onClick={() => openEditModal(todo)}
+                >
+                  Update
+                </button>
+                <button
+                  className="btn bg-coral"
+                  onClick={() => deleteTodo(todo.id)}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Modal (portal to body so fixed positioning truly centers in viewport) */}
+        {showModal &&
+          createPortal(
+            <div
+              className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4"
+              onClick={closeModal}
+            >
+              <div
+                className="w-full max-w-md rounded-xl bg-white shadow-2xl p-6 relative"
+                onClick={(e) => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="editTodoTitle"
+              >
+                <h3 id="editTodoTitle" className="text-xl font-semibold mb-4">
+                  Edit Todo
+                </h3>
+                <input
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  placeholder="New title"
+                  className="w-full border rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-turquoise"
+                  autoFocus
+                />
+                <div className="flex justify-end gap-2">
+                  <button onClick={closeModal} className="btn bg-dutchWhite">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={saveEdit}
+                    className="btn bg-turquoise"
+                    disabled={!editTitle || !editTitle.trim()}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
+      </div>
+      {/* Filter */}
+      <svg width="0" height="0" style={{ position: "absolute" }}>
+        <filter id="liquidGlass" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.009"
+            numOctaves="3"
+            seed="3"
+            result="noise"
+          />
+          <feGaussianBlur in="noise" stdDeviation="3" result="softNoise" />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="softNoise"
+            scale="20"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </svg>
     </div>
   );
 }

@@ -1,0 +1,99 @@
+@import url("https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400..700;1,400..700&family=Kaushan+Script&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-script: "Kaushan Script", cursive;
+  --font-sans: "Cabin", sans-serif;
+  --color-turquoise: #40e0d075;
+  --color-coral: #ff7f5075;
+  --color-dutchWhite: #f3dfbf75;
+}
+
+/* Custom button class */
+.btn {
+  @apply px-4 py-2 rounded-xl font-medium text-black transition;
+}
+
+/* Liquid glass container styles */
+.liquid-container {
+  position: relative;
+  border-radius: 0.75rem; /* 12px */
+  background: rgba(255, 255, 255, 0.12); /* slightly subtler base */
+  -webkit-backdrop-filter: blur(20px) saturate(1.15) contrast(1.02);
+  backdrop-filter: blur(20px) saturate(1.15) contrast(1.02);
+  /* dual edge: outer border + inner outline for that chamfered look */
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  outline: 1px solid rgba(255, 255, 255, 0.15);
+  outline-offset: -4px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  overflow: hidden; /* clip pseudo-elements */
+}
+
+/* Displaced background layer to simulate liquid distortion */
+.liquid-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+
+  /* draw the same page background here */
+  background-image: url("/assets/background-image.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed; /* helps alignment on scroll */
+
+  /* distort this layer with the SVG displacement filter */
+  filter: url(#liquidGlass);
+
+  /* soften + blend so it feels glassy */
+  opacity: 0.5;
+  mix-blend-mode: screen;
+
+  z-index: 0; /* under highlight + content */
+}
+
+/* Subtle highlight + micro-noise to sell the material */
+.liquid-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+
+  /* top highlight gradient */
+  background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.1) 35%,
+      rgba(255, 255, 255, 0.04) 55%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    /* micro-noise pattern */
+      radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: auto, 3px 3px;
+  background-blend-mode: screen, soft-light;
+  opacity: 0.9;
+  z-index: 1; /* above displaced layer, below content */
+}
+
+/* Ensure content sits above the displaced layer and highlight */
+.liquid-container > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Optional gentle animation for the liquid waves */
+@keyframes liquid-wobble {
+  0% {
+    filter: url(#liquidGlass);
+  }
+  100% {
+    filter: url(#liquidGlass);
+  }
+}
+
+/* Add this class alongside .liquid-container to animate */
+.liquid-animated::before {
+  animation: liquid-wobble 8s ease-in-out infinite alternate;
+}
